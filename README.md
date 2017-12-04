@@ -1,2 +1,4 @@
-# lib_geojson
+# geojson
 a C++ geoJSON parser
+
+http://geojson.org/
