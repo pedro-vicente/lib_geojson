@@ -1,11 +1,29 @@
 # geojson
 a C++ geoJSON parser. GeoJSON is a format for encoding a variety of geographic data structures.
 
+
+[![Build status](https://ci.appveyor.com/api/projects/status/wuivv12v10r2i4sw?svg=true)](https://ci.appveyor.com/project/pedro-vicente/lib-geojson)
+
+
+
+#geoJSON specification
+
 http://geojson.org/
 
 JSON parsing is done with gason
 
 https://github.com/vivkin/gason
+
+#Usage
+
+One argument, geoJSON file
+
+```
+./parser <geojon file>
+```
+
+
+#C++ usage
 
 Storage is done into a list of features
 
@@ -13,8 +31,7 @@ Storage is done into a list of features
 std::vector<feature_t> m_feature;
 ```
 
-Usage:
-
+A feature is a list geometries, and a geometry is a list of polygons.
 
 ```c++
 geojson_t geojson;
@@ -68,5 +85,45 @@ for (size_t idx_fet = 0; idx_fet < size_features; idx_fet++)
       }
     }
   }
+}
+```
+
+#Sample geoJSON file
+
+
+
+```
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "name 1",
+        "marker-color": "#0000ff"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.12911152370515,
+          38.79930767201779
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "name 2",
+        "marker-color": "#0000ff"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.16797018042666,
+          38.766521892689916
+        ]
+      }
+    }
+  ]
 }
 ```

@@ -1,0 +1,9 @@
+before_build:
+  - cmake -H. -Bbuild 
+
+build:
+  project: build\geojson.sln
+  verbosity: minimal
+  
+test_script:
+  - build\Debug\parser.exe simple.geojson

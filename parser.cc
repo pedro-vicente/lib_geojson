@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 {
   if (argc < 2)
   {
-    std::cout << "usage : ./geojson <GEOJSON file>" << std::endl;
+    std::cout << "usage : ./parser <GEOJSON file>" << std::endl;
     return 1;
   }
 
