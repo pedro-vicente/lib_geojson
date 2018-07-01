@@ -127,3 +127,17 @@ for (size_t idx_fet = 0; idx_fet < size_features; idx_fet++)
   ]
 }
 ```
+
+# Rendering
+
+Render by WxWidgets GUI library
+
+https://github.com/pedro-vicente/render_geojson
+
+![image](https://user-images.githubusercontent.com/6119070/41935976-a4eb5530-7959-11e8-9f51-5a7e0be79197.png)
+
+Render by Wt web framewwork, Leaflet branch
+
+https://github.com/pedro-vicente/wt
+
+![image](https://user-images.githubusercontent.com/6119070/41950762-ae7f33aa-7995-11e8-85a7-661c3630d5c8.png)
