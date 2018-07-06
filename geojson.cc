@@ -6,8 +6,8 @@
 #include "geojson.hh"
 
 const int SHIFT_WIDTH = 4;
-const bool DATA_NEWLINE = false;
-const bool OBJECT_NEWLINE = false;
+bool DATA_NEWLINE = false;
+bool OBJECT_NEWLINE = false;
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -33,7 +33,8 @@ int geojson_t::convert(const char* file_name)
   buf = (char*)malloc(length);
   if (buf)
   {
-    fread(buf, 1, length, f);
+    size_t nbr = fread(buf, 1, length, f);
+    std::cout << "read " << nbr << std::endl;
   }
   fclose(f);
 
@@ -47,7 +48,6 @@ int geojson_t::convert(const char* file_name)
     return -1;
   }
 
-  if (0) dump_value(value);
   parse_root(value);
   free(buf);
   return 0;
@@ -70,6 +70,12 @@ int geojson_t::parse_root(JsonValue value)
     if (std::string(node->key).compare("type") == 0)
     {
       assert(node->value.getTag() == JSON_STRING);
+      std::string str = node->value.toString();
+      if (str.compare("Feature") == 0)
+      {
+        //parse the root, contains only one "Feature"
+        parse_feature(value);
+      }
     }
     if (std::string(node->key).compare("features") == 0)
     {
@@ -77,7 +83,6 @@ int geojson_t::parse_root(JsonValue value)
       parse_features(node->value);
     }
   }
-
   return 0;
 }
 
@@ -89,64 +94,69 @@ int geojson_t::parse_root(JsonValue value)
 int geojson_t::parse_features(JsonValue value)
 {
   assert(value.getTag() == JSON_ARRAY);
-
   size_t arr_size = 0; //size of array
-  for (JsonNode *node = value.toNode(); node != nullptr; node = node->next)
+  for (JsonNode *n_feat = value.toNode(); n_feat != nullptr; n_feat = n_feat->next)
   {
     arr_size++;
   }
-
   std::cout << "features: " << arr_size << std::endl;
-
   for (JsonNode *n_feat = value.toNode(); n_feat != nullptr; n_feat = n_feat->next)
   {
     JsonValue object = n_feat->value;
     assert(object.getTag() == JSON_OBJECT);
+    parse_feature(object);
+  }
+  return 0;
+}
 
-    feature_t feature;
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//geojson_t::parse_feature
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //3 objects with keys: 
-    // "type", 
-    // "properties", 
-    // "geometry"
-    //"type" has a string value "Feature"
-    //"properties" has a list of objects
-    //"geometry" has 2 objects: 
-    //key "type" with value string geometry type (e.g."Polygon") and
-    //key "coordinates" an array
+int geojson_t::parse_feature(JsonValue value)
+{
+  JsonValue object = value;
+  assert(object.getTag() == JSON_OBJECT);
+  feature_t feature;
 
-    for (JsonNode *obj = object.toNode(); obj != nullptr; obj = obj->next)
+  //3 objects with keys: 
+  // "type", 
+  // "properties", 
+  // "geometry"
+  //"type" has a string value "Feature"
+  //"properties" has a list of objects
+  //"geometry" has 2 objects: 
+  //key "type" with value string geometry type (e.g."Polygon") and
+  //key "coordinates" an array
+
+  for (JsonNode *obj = object.toNode(); obj != nullptr; obj = obj->next)
+  {
+    if (std::string(obj->key).compare("type") == 0)
     {
-      if (std::string(obj->key).compare("type") == 0)
+      assert(obj->value.getTag() == JSON_STRING);
+    }
+    else if (std::string(obj->key).compare("properties") == 0)
+    {
+      assert(obj->value.getTag() == JSON_OBJECT);
+      //parse properties
+      for (JsonNode *prp = obj->value.toNode(); prp != nullptr; prp = prp->next)
       {
-        assert(obj->value.getTag() == JSON_STRING);
-      }
-      else if (std::string(obj->key).compare("properties") == 0)
-      {
-        assert(obj->value.getTag() == JSON_OBJECT);
-        //parse properties
-        for (JsonNode *prp = obj->value.toNode(); prp != nullptr; prp = prp->next)
+        //get name
+        if (std::string(prp->key).compare("NAME") == 0 || std::string(prp->key).compare("name") == 0)
         {
-          //get name
-          if (std::string(prp->key).compare("NAME") == 0 || std::string(prp->key).compare("name") == 0)
-          {
-            assert(prp->value.getTag() == JSON_STRING);
-            feature.m_name = prp->value.toString();
-            std::cout << "NAME: " << feature.m_name << std::endl;
-          }
+          assert(prp->value.getTag() == JSON_STRING);
+          feature.m_name = prp->value.toString();
+          std::cout << "NAME: " << feature.m_name << std::endl;
         }
       }
-      else if (std::string(obj->key).compare("geometry") == 0)
-      {
-        assert(obj->value.getTag() == JSON_OBJECT);
-        parse_geometry(obj->value, feature);
-      }
     }
-
-    m_feature.push_back(feature);
-  } //n_feat
-
-
+    else if (std::string(obj->key).compare("geometry") == 0)
+    {
+      assert(obj->value.getTag() == JSON_OBJECT);
+      parse_geometry(obj->value, feature);
+    }
+  }
+  m_feature.push_back(feature);
   return 0;
 }
 
@@ -161,7 +171,6 @@ int geojson_t::parse_geometry(JsonValue value, feature_t &feature)
 {
   assert(value.getTag() == JSON_OBJECT);
   std::string str_geometry_type; //"Polygon", "MultiPolygon", "Point"
-
   for (JsonNode *node = value.toNode(); node != nullptr; node = node->next)
   {
     if (std::string(node->key).compare("type") == 0)
@@ -181,14 +190,14 @@ int geojson_t::parse_geometry(JsonValue value, feature_t &feature)
 
         geometry_t geometry;
         geometry.m_type = str_geometry_type;
-        coord_t coord;
+        
         polygon_t polygon;
         JsonValue arr_coord = node->value;
-        coord.m_lon = arr_coord.toNode()->value.toNumber();;
-        coord.m_lat = arr_coord.toNode()->next->value.toNumber();
+        double lon = arr_coord.toNode()->value.toNumber();;
+        double lat = arr_coord.toNode()->next->value.toNumber();
+        coord_t coord(lon, lat);
         polygon.m_coord.push_back(coord);
         geometry.m_polygons.push_back(polygon);
-       
         feature.m_geometry.push_back(geometry);
       }
 
@@ -207,9 +216,7 @@ int geojson_t::parse_geometry(JsonValue value, feature_t &feature)
         parse_coordinates(node->value, str_geometry_type, feature);
       }
     }
-
   }
-
   return 0;
 }
 
@@ -223,15 +230,11 @@ int geojson_t::parse_geometry(JsonValue value, feature_t &feature)
 //and then an array of 2 numbers (lat, lon)
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int geojson_t::parse_coordinates(JsonValue value,
-  const std::string &type,
-  feature_t &feature)
+int geojson_t::parse_coordinates(JsonValue value, const std::string &type, feature_t &feature)
 {
   assert(value.getTag() == JSON_ARRAY);
-
   geometry_t geometry;
   geometry.m_type = type;
-
   if (type.compare("Polygon") == 0)
   {
     for (JsonNode *node = value.toNode(); node != nullptr; node = node->next)
@@ -244,12 +247,11 @@ int geojson_t::parse_coordinates(JsonValue value,
       {
         JsonValue crd = n->value;
         assert(crd.getTag() == JSON_ARRAY);
-        coord_t coord;
-        coord.m_lon = crd.toNode()->value.toNumber();;
-        coord.m_lat = crd.toNode()->next->value.toNumber();
+        double lon = crd.toNode()->value.toNumber();;
+        double lat = crd.toNode()->next->value.toNumber();
+        coord_t coord(lon, lat);
         polygon.m_coord.push_back(coord);
       }
-
       geometry.m_polygons.push_back(polygon);
     }
   }
@@ -260,28 +262,24 @@ int geojson_t::parse_coordinates(JsonValue value,
     {
       JsonValue arr = node->value;
       assert(arr.getTag() == JSON_ARRAY);
-
       for (JsonNode *n = arr.toNode(); n != nullptr; n = n->next) //array of size 1
       {
         JsonValue arr_crd = n->value;
         assert(arr_crd.getTag() == JSON_ARRAY);
-
         polygon_t polygon;
         for (JsonNode *m = arr_crd.toNode(); m != nullptr; m = m->next)
         {
           JsonValue crd = m->value;
           assert(crd.getTag() == JSON_ARRAY);
-          coord_t coord;
-          coord.m_lon = crd.toNode()->value.toNumber();;
-          coord.m_lat = crd.toNode()->next->value.toNumber();
+          double lon = crd.toNode()->value.toNumber();;
+          double lat = crd.toNode()->next->value.toNumber();
+          coord_t coord(lon, lat);
           polygon.m_coord.push_back(coord);
         }
-
         geometry.m_polygons.push_back(polygon);
       }
     }
   }
-
   //store
   feature.m_geometry.push_back(geometry);
   return 0;

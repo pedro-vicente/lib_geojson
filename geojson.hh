@@ -13,17 +13,20 @@
 #include <vector>
 #include "gason.h"
 
-///////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 //coord_t
-///////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class coord_t
 {
 public:
-  coord_t()
-  {};
-  double m_lon;
-  double m_lat;
+  coord_t(double x_, double y_) :
+    x(x_),
+    y(y_)
+  {
+  }
+  double x;
+  double y;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -83,10 +86,9 @@ public:
 private:
   int parse_root(JsonValue value);
   int parse_features(JsonValue value);
+  int parse_feature(JsonValue value);
   int parse_geometry(JsonValue value, feature_t &feature);
-  int parse_coordinates(JsonValue value,
-    const std::string &type,
-    feature_t &feature);
+  int parse_coordinates(JsonValue value, const std::string &type, feature_t &feature);
   int dump_value(JsonValue value, int indent = 0);
   void dump_string(const char *s);
 };

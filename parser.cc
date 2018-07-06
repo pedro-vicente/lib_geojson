@@ -52,8 +52,8 @@ int main(int argc, char *argv[])
 
         for (size_t idx_crd = 0; idx_crd < size_crd; idx_crd++)
         {
-          lat.push_back(polygon.m_coord[idx_crd].m_lat);
-          lon.push_back(polygon.m_coord[idx_crd].m_lon);
+          lat.push_back(polygon.m_coord[idx_crd].y);
+          lon.push_back(polygon.m_coord[idx_crd].x);
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////
