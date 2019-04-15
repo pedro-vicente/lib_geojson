@@ -6,7 +6,7 @@ a C++ geoJSON parser. GeoJSON is a format for encoding a variety of geographic d
 
 
 
-#geoJSON specification
+## geoJSON specification
 
 http://geojson.org/
 
@@ -14,7 +14,7 @@ JSON parsing is done with gason
 
 https://github.com/vivkin/gason
 
-#Usage
+## Usage
 
 One argument, geoJSON file
 
@@ -23,7 +23,7 @@ One argument, geoJSON file
 ```
 
 
-#C++ usage
+## C++ usage
 
 Storage is done into a list of features
 
@@ -88,7 +88,7 @@ for (size_t idx_fet = 0; idx_fet < size_features; idx_fet++)
 }
 ```
 
-#Sample geoJSON file
+## Sample geoJSON file
 
 
 
@@ -128,7 +128,7 @@ for (size_t idx_fet = 0; idx_fet < size_features; idx_fet++)
 }
 ```
 
-# Rendering
+## Rendering
 
 Render by WxWidgets GUI library
 
