@@ -3,30 +3,41 @@
   "features": [
     {
       "type": "Feature",
-      "properties": {
-        "name": "name 1",
-        "marker-color": "#0000ff"
-      },
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -77.12911152370515,
-          38.79930767201779
-        ]
+        "coordinates": [102.0, 0.5]
+      },
+      "properties": {
+        "prop0": "value0"
       }
     },
     {
       "type": "Feature",
-      "properties": {
-        "name": "name 2",
-        "marker-color": "#0000ff"
-      },
       "geometry": {
-        "type": "Point",
+        "type": "LineString",
         "coordinates": [
-          -77.16797018042666,
-          38.766521892689916
+          [102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]
         ]
+      },
+      "properties": {
+        "prop0": "value0",
+        "prop1": 0.0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
+            [100.0, 1.0], [100.0, 0.0]
+          ]
+        ]
+      },
+      "properties": {
+        "prop0": "value0",
+        "prop1": { "this": "that" }
       }
     }
   ]
